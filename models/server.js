@@ -15,7 +15,8 @@ class Server{
         this.paths = {
             characters: "/api/characters",
             movies: "/api/movies",
-            genres: "/api/genres"
+            genres: "/api/genres",
+            auth: "/auth"
         }
 
         this.middlewares();
@@ -31,6 +32,7 @@ class Server{
         this.app.use(this.paths.characters, require("../routes/character"));
         this.app.use(this.paths.movies, require("../routes/movie"));
         this.app.use(this.paths.genres, require("../routes/genre"));
+        this.app.use(this.paths.auth, require("../routes/auth"));
     }
 
     start() {
