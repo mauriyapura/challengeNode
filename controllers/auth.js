@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const { generarJWT } = require("../helpers/generarJWT");
 
 const getUserById = async(req, res) => {
 
@@ -39,7 +40,10 @@ const login = async(req, res) => {
         if(!validPassword){
             return res.status(400).json("Email or password incorrect");
         }
-        res.status(200).json(user);
+
+        const token = await generarJWT(user.id);
+
+        res.status(200).json({token, user});
         
     } catch (err) {
         res.status(500).json(err);        

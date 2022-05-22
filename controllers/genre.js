@@ -16,6 +16,9 @@ const getGenreById = async(req, res)=>{
                 }           
             }]
         });
+        if(!genre){
+            return res.status(404).json("Genre ID not found")
+        }
         res.status(200).json(genre);        
     } catch (error) {
         res.status(500).json(error);        

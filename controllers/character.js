@@ -16,6 +16,9 @@ const getCharacterById = async(req, res)=>{
                 }           
             }]
         });
+        if(!character){
+            return res.status(404).json("Character ID not found")
+        }
         res.status(200).json(character);        
     } catch (error) {
         res.status(500).json(error);        

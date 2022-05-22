@@ -12,7 +12,7 @@ const Movie = sequelize.define('movies', {
         allowNull: false
     },
     calificacion: {
-        type: DataTypes.STRING(50),
+        type: DataTypes.INTEGER,
         allowNull: false,
         validate: {
             min: 1,
