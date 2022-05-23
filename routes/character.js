@@ -1,7 +1,7 @@
 
 const { Router } = require('express');
 const { check } = require('express-validator');
-const { getCharacterById, postCharacter, updateCharacter, addCharacterToMovie, getAllCharacters } = require('../controllers/character');
+const { getCharacterById, postCharacter, updateCharacter, addCharacterToMovie, getAllCharacters, deleteCharacter } = require('../controllers/character');
 const { validarJWT } = require('../helpers/validar-jwt');
 const { validations } = require('../helpers/validations');
 
@@ -37,5 +37,10 @@ router.put("/association/:id", [
     validations
 ], addCharacterToMovie);
 
+
+router.delete("/:id",[
+    validarJWT,
+    validations
+], deleteCharacter);
 
 module.exports = router;

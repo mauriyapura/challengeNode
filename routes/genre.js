@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { getGenreById, getAllGenres, postGenre, updateGenre, addGenreToMovie } = require('../controllers/genre');
+const { getGenreById, getAllGenres, postGenre, updateGenre, addGenreToMovie, deleteGenre } = require('../controllers/genre');
 const { validarJWT } = require('../helpers/validar-jwt');
 const { validations } = require('../helpers/validations');
 const { check } = require('express-validator');
@@ -29,6 +29,11 @@ router.put("/association/:id", [
     validarJWT,
     validations
 ], addGenreToMovie);
+
+router.delete("/:id",[
+    validarJWT,
+    validations
+], deleteGenre);
 
 
 

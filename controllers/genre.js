@@ -110,7 +110,23 @@ const addGenreToMovie = async(req, res) => {
             msg: 'Hable con el administrador'
         });
     }
-}
+};
+
+const deleteGenre = async(req, res) => {
+
+    const {id} = req.params;
+    const genre = await Genre.findByPk(id);
+    if(!genre){
+        return res.status(404).json("Genre ID not found")
+    };
+    try {
+        await genre.destroy();
+        res.status(200).json(`Deleted genre with ID ${id} and name ${genre.nombre}`);
+        
+    } catch (err) {
+        res.status(500).json(err)
+    }
+};
 
 
 module.exports = {
@@ -118,5 +134,6 @@ module.exports = {
     getAllGenres,
     postGenre,
     updateGenre,
-    addGenreToMovie
+    addGenreToMovie,
+    deleteGenre
 }

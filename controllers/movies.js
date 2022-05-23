@@ -126,7 +126,23 @@ const addMovieToCharacter = async(req, res) => {
             msg: 'Hable con el administrador'
         });
     }
-}
+};
+
+const deleteMovie = async(req, res) => {
+
+    const {id} = req.params;
+    const movie = await Movie.findByPk(id);
+    if(!movie){
+        return res.status(404).json("Movie ID not found")
+    };
+    try {
+        await movie.destroy();
+        res.status(200).json(`Deleted movie with ID ${id} and title ${movie.titulo}`);
+        
+    } catch (err) {
+        res.status(500).json(err)
+    }
+};
 
 
 module.exports = {
@@ -134,5 +150,6 @@ module.exports = {
     getAllMovies,
     postMovie,
     updateMovie,
-    addMovieToCharacter
+    addMovieToCharacter,
+    deleteMovie
 }

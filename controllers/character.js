@@ -111,12 +111,29 @@ const addCharacterToMovie = async(req, res) => {
             msg: 'Hable con el administrador'
         });
     }
-}
+};
+
+const deleteCharacter = async(req, res) => {
+
+    const {id} = req.params;
+    const character = await Character.findByPk(id);
+    if(!character){
+        return res.status(404).json("Character ID not found")
+    };
+    try {
+        await character.destroy();
+        res.status(200).json(`Deleted character with ID ${id} and name ${character.nombre}`);
+        
+    } catch (err) {
+        res.status(500).json(err)
+    }
+};
 
 module.exports = {
     getCharacterById,
     getAllCharacters,
     postCharacter,
     updateCharacter,
-    addCharacterToMovie
+    addCharacterToMovie,
+    deleteCharacter
 }
