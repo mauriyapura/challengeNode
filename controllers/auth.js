@@ -1,6 +1,8 @@
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const { generarJWT } = require("../helpers/generarJWT");
+const sgMail = require("@sendgrid/mail")
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const getUserById = async(req, res) => {
 
@@ -16,10 +18,18 @@ const getUserById = async(req, res) => {
 // Register
 const postUser = async(req, res) => {
 
-    const {email, password} = req.body;   
+    const {email, password} = req.body;    
     try {
         const passwordHash = await bcrypt.hash(password, 10);
-        const user = await User.create({email, password: passwordHash});      
+        const user = await User.create({email, password: passwordHash});     
+
+        const message = {
+            to: email,
+            from: {name: 'Challenge para Alkemy', email: 'myapura341@gmail.com'},
+            subject: "Tu registro fue exitoso",
+            text: "Bienvenido. Te registraste a esta API. Ahora tendras acceso a los recursos."
+        };        
+        sgMail.send(message);
         res.status(201).json(user);        
     } catch (err) {
         res.status(500).json(err);
