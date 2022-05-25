@@ -3,6 +3,7 @@ const express = require('express');
 const Character = require('../models/character');
 const Movie = require("../models/movie");
 const Genre = require("../models/genres");
+const { Op } = require('sequelize');
 
 const getMovieById = async(req, res)=>{
     const {id} = req.params;
@@ -35,6 +36,31 @@ const getMovieById = async(req, res)=>{
 };
 
 const getAllMovies = async(req, res)=>{
+
+    let {titulo, genre, order} = req.query;   
+    let whereCondition = {};
+    
+    if(titulo){
+        whereCondition.titulo = {[Op.like]: '%'+titulo+'%'};
+    }   
+    if(!order){
+        order = "ASC";
+    }  
+    if(genre){
+        const genresMovie = await Movie.findAll({
+            where: {
+                '$genres.id$': genre
+            },
+            include: [{
+                model: Genre,
+                as: "genres",                        
+            }],
+            order: [
+                ["titulo", order]
+            ]
+        });
+        return res.status(200).json(genresMovie);
+    }     
     
     try {
        const movies = await Movie.findAll({
@@ -52,12 +78,15 @@ const getAllMovies = async(req, res)=>{
                 through: {
                     attributes: []
                 }           
-            }]
+            }],
+            where: whereCondition,
+            order: [
+                ["titulo", order]
+            ]
        });
        res.status(200).json(movies);       
    } catch (error) {
-    res.status(500).json(error);        
-       
+    res.status(500).json(error);      
    }
 };
 

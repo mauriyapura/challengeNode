@@ -1,6 +1,8 @@
 const express = require('express');
 const Character = require("../models/character");
 const Movie = require('../models/movie');
+const {characterMovie} = require('../models/associations');
+const { Op } = require('sequelize');
 
 const getCharacterById = async(req, res)=>{
     const {id} = req.params;
@@ -27,6 +29,29 @@ const getCharacterById = async(req, res)=>{
 
 const getAllCharacters = async(req, res) => {
 
+    const {nombre, edad, movie } = req.query;
+    //console.log(nombre, edad, movie);
+    let whereCondition = {};
+
+    if(nombre){
+        whereCondition.nombre = {[Op.like]: '%'+nombre+'%'};
+    }
+    if(edad){        
+        whereCondition.edad = {[Op.like]: '%'+edad+'%'};        
+    }   
+
+    if(movie){
+        const charactersMovie = await Character.findAll({
+            where: {
+                '$movies.id$': movie
+            },
+            include: [{
+                model: Movie,
+                as: "movies",                        
+            }],
+        });
+        return res.status(200).json(charactersMovie);
+    }    
     try {
         const characters = await Character.findAll({
             include: [{
@@ -36,7 +61,8 @@ const getAllCharacters = async(req, res) => {
                 through: {
                     attributes: []
                 }           
-            }]
+            }],
+            where: whereCondition
         });
         res.status(200).json(characters);
         

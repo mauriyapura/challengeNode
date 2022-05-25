@@ -53,3 +53,7 @@ movie.belongsToMany(character, {through: characterMovie});
 genre.belongsToMany(movie, {through: genreMovie});
 movie.belongsToMany(genre, {through: genreMovie});
 
+
+module.exports = {
+  characterMovie
+};
