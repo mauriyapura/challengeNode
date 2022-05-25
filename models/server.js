@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require("cors");
 const config = require("../config/index");
+const fileUpload = require("express-fileupload");
 
 require("./associations");
 
@@ -16,7 +17,7 @@ class Server{
             characters: "/api/characters",
             movies: "/api/movies",
             genres: "/api/genres",
-            auth: "/auth"
+            auth: "/auth"            
         }
 
         this.middlewares();
@@ -26,13 +27,19 @@ class Server{
     middlewares(){
         this.app.use(cors());
         this.app.use(express.json());
+        // Subida de archivos con fileupload
+        this.app.use(fileUpload({
+            useTempFiles : true,
+            tempFileDir : '/tmp/',
+            createParentPath: true
+        }));
     }
 
     routes(){
         this.app.use(this.paths.characters, require("../routes/character"));
         this.app.use(this.paths.movies, require("../routes/movie"));
         this.app.use(this.paths.genres, require("../routes/genre"));
-        this.app.use(this.paths.auth, require("../routes/auth"));
+        this.app.use(this.paths.auth, require("../routes/auth"));        
     }
 
     start() {

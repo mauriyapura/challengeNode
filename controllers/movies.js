@@ -4,6 +4,8 @@ const Character = require('../models/character');
 const Movie = require("../models/movie");
 const Genre = require("../models/genres");
 const { Op } = require('sequelize');
+const cloudinary = require('cloudinary').v2;
+
 
 const getMovieById = async(req, res)=>{
     const {id} = req.params;
@@ -92,18 +94,24 @@ const getAllMovies = async(req, res)=>{
 
 const postMovie = async(req, res)=>{
 
-    const {titulo, fechaCreacion, calificacion, imagen} = req.body;
+    const {titulo, fechaCreacion, calificacion} = req.body;
+    let fileUpload;
 
     try {
-        const movie = await Movie.create({titulo, fechaCreacion, calificacion, imagen, });
-        res.status(201).json(movie);
-        
+        const movie = await Movie.create({titulo, fechaCreacion, calificacion});
+        if (!req.files || Object.keys(req.files).length === 0 || !req.files.file) {
+            fileUpload = false;            
+        }else{ fileUpload = true }
+
+        if(fileUpload){
+            const {tempFilePath} = req.files.file;
+            const {secure_url} = await cloudinary.uploader.upload(tempFilePath);
+            movie.imagen = secure_url;
+            await movie.save();
+        }
+        res.status(201).json(movie);        
     } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            msg: 'Hable con el administrador'
-        });        
+        res.status(500).json(error);             
     }
 };
 
@@ -130,6 +138,35 @@ const updateMovie = async(req, res) => {
         });          
     }
 };;
+
+// Actualizar imagen de una pelicula
+const updateImage = async(req, res) => {
+
+    const {id} = req.params;
+    try {
+        const movie = await Movie.findByPk(id);
+        if(!movie){
+            return res.status(400).json({msg: ` Movie ID not found`})
+        }
+
+        // borrar imagenes previas
+        if(movie.imagen){
+            const nameArr = movie.imagen.split('/');
+            const name = nameArr[nameArr.length - 1];
+            const [public_id] = name.split('.');
+            await cloudinary.uploader.destroy(public_id);
+        }
+
+        const {tempFilePath} = req.files.file;
+        const {secure_url} = await cloudinary.uploader.upload(tempFilePath);
+        movie.imagen = secure_url;
+        await movie.save();
+        res.status(200).json(movie);
+        
+    } catch (err) {
+        res.status(500).json(err);        
+    }
+};
 
 // Agregar una pelicula a un personaje
 const addMovieToCharacter = async(req, res) => {
@@ -179,6 +216,7 @@ module.exports = {
     getAllMovies,
     postMovie,
     updateMovie,
+    updateImage,
     addMovieToCharacter,
     deleteMovie
 }

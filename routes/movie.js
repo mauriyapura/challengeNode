@@ -1,10 +1,11 @@
 
 const { Router } = require('express');
-const { postMovie, updateMovie, getAllMovies, getMovieById, addMovieToCharacter, deleteMovie } = require('../controllers/movies');
+const { postMovie, updateMovie, getAllMovies, getMovieById, addMovieToCharacter, deleteMovie, updateImage } = require('../controllers/movies');
 
 const { check } = require('express-validator');
 const { validarJWT } = require('../helpers/validar-jwt');
 const { validations } = require('../helpers/validations');
+const { fileValidation } = require('../helpers/fileValidation');
 
 
 const router = Router();
@@ -34,6 +35,12 @@ router.put("/association/:id", [
     validarJWT,
     validations
 ], addMovieToCharacter);
+
+router.put("/image/:id", [
+    validarJWT,
+    fileValidation,
+    validations
+], updateImage);
 
 router.delete("/:id",[
     validarJWT,

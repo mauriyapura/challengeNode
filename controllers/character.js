@@ -1,8 +1,11 @@
 const express = require('express');
 const Character = require("../models/character");
 const Movie = require('../models/movie');
-const {characterMovie} = require('../models/associations');
+//const {characterMovie} = require('../models/associations');
 const { Op } = require('sequelize');
+const cloudinary = require('cloudinary').v2;
+cloudinary.config(process.env.CLOUDINARY_URL);
+
 
 const getCharacterById = async(req, res)=>{
     const {id} = req.params;
@@ -73,20 +76,28 @@ const getAllCharacters = async(req, res) => {
 
 const postCharacter = async(req, res)=>{
 
-    const {nombre, edad, peso, historia, imagen} = req.body;
+    const {nombre, edad, peso, historia} = req.body;
+    let fileUpload;
 
     try {
-        const character = await Character.create({ nombre, edad, peso, historia, imagen });
-        res.status(201).json(character);
-        
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            success: false,
-            msg: 'Hable con el administrador'
-        });        
-    }
+        const character = await Character.create({ nombre, edad, peso, historia });
 
+        if (!req.files || Object.keys(req.files).length === 0 || !req.files.file) {
+            fileUpload = false;            
+        }else{
+            fileUpload = true;
+        }        
+        
+        if(fileUpload){
+            const {tempFilePath} = req.files.file;
+            const {secure_url} = await cloudinary.uploader.upload(tempFilePath);
+            character.imagen = secure_url;
+            await character.save();
+        }
+        res.status(201).json(character);        
+    } catch (error) {
+        res.status(500).json(error);               
+    }
 };
 
 const updateCharacter = async(req, res) => {
@@ -104,14 +115,43 @@ const updateCharacter = async(req, res) => {
             });
         } 
         
-    } catch (error) {
-        console.error(error);
+    } catch (error) {        
         res.status(500).json({
             success: false,
             msg: 'Hable con el administrador'
         });          
     }
 };
+
+// Actualizar imagen de personaje
+const updateImage = async(req, res) => {
+
+    const {id} = req.params;
+    try {
+        const character = await Character.findByPk(id);
+        if(!character){
+            return res.status(400).json({msg: ` Character ID not found`})
+        }
+
+        // borrar imagenes previas
+        if(character.imagen){
+            const nameArr = character.imagen.split('/');
+            const name = nameArr[nameArr.length - 1];
+            const [public_id] = name.split('.');
+            await cloudinary.uploader.destroy(public_id);
+        }
+
+        const {tempFilePath} = req.files.file;
+        const {secure_url} = await cloudinary.uploader.upload(tempFilePath);
+        character.imagen = secure_url;
+        await character.save();
+        res.status(200).json(character);
+        
+    } catch (err) {
+        res.status(500).json(err);        
+    }
+};
+
 
 // Agregar un personaje a una pelicula
 const addCharacterToMovie = async(req, res) => {
@@ -161,5 +201,6 @@ module.exports = {
     postCharacter,
     updateCharacter,
     addCharacterToMovie,
+    updateImage,
     deleteCharacter
 }
