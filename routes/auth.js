@@ -1,4 +1,4 @@
-const { postUser, getUserById, login } = require("../controllers/auth");
+const { postUser, getUserById, login, deleteUser } = require("../controllers/auth");
 const { validations } = require("../helpers/validations");
 const { check } = require('express-validator');
 
@@ -20,6 +20,9 @@ router.post("/login", [
     check("password", "password es requerido").notEmpty(),   
     validations
 ], login);
+
+
+router.delete("/:id", deleteUser);
 
 
 

@@ -60,9 +60,22 @@ const login = async(req, res) => {
     }
 };
 
+const deleteUser = async(req, res) => {
+
+    const {id} = req.params;
+    try {
+        const user = await User.findByPk(id);
+        await user.destroy();        
+        res.status(200).json("User deleted");
+    } catch (err) {
+        res.status(500).json(err);        
+    }
+};
+
 
 module.exports = {
     getUserById,
     postUser,
-    login
+    login,
+    deleteUser
 }
