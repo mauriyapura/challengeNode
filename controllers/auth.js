@@ -5,7 +5,6 @@ const sgMail = require("@sendgrid/mail")
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const getUserById = async(req, res) => {
-
     const {id} = req.params;
     try {
         const user = await User.findByPk(id);        
@@ -20,9 +19,12 @@ const postUser = async(req, res) => {
 
     const {email, password} = req.body;    
     try {
+        const isUser = await User.findOne({where: { email: email }});
+        if(isUser){
+            return res.status(400).json("Email already in use!");
+        }
         const passwordHash = await bcrypt.hash(password, 10);
         const user = await User.create({email, password: passwordHash});     
-
         const message = {
             to: email,
             from: {name: 'Challenge para Alkemy', email: 'myapura341@gmail.com'},
@@ -41,7 +43,6 @@ const login = async(req, res) => {
 
     const {email, password} = req.body;
     try {
-
         const user = await User.findOne({ where: {email: email} });
         if(!user){
             return res.status(400).json("Email or password incorrect");
@@ -52,9 +53,7 @@ const login = async(req, res) => {
         }
 
         const token = await generarJWT(user.id);
-
-        res.status(200).json({token, user});
-        
+        res.status(200).json({token, user});        
     } catch (err) {
         res.status(500).json(err);        
     }
